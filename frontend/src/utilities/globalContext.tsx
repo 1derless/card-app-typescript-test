@@ -1,5 +1,5 @@
 import {createContext , useState, FC, ReactNode, useEffect} from 'react'
-import {Entry, EntryContextType} from '../@types/context'
+import {Entry, EntryContextType, Theme, ThemeContextType} from '../@types/context'
 import axios from 'axios'
 
 export const EntryContext = createContext<EntryContextType | null>(null);
@@ -43,3 +43,38 @@ export const EntryProvider: React.FC<{children : ReactNode}> = ({children}) => {
       )
 }
 
+export const ThemeContext = createContext<ThemeContextType | null>(null);
+
+function getInitialTheme(key: string) : Theme {
+    const storedTheme = localStorage.getItem(key)
+    if (storedTheme === "light" || storedTheme === "dark") {
+      return storedTheme
+    } else {
+      return "light"
+    }
+}
+
+export const ThemeProvider: React.FC<{children : ReactNode}> = ({children}) => {
+    const KEY = "theme";
+    const [theme, setThemeState] = useState<Theme>(getInitialTheme(KEY));
+    if (theme === "dark") {
+      document.body.classList.add("dark")
+    }
+
+    function setTheme(newTheme: Theme) {
+      setThemeState(newTheme)
+      localStorage.setItem(KEY, newTheme)
+      // Inform Tailwind to use dark mode
+      if (newTheme === "dark") {
+        document.body.classList.add("dark")
+      } else {
+        document.body.classList.remove("dark")
+      }
+    }
+
+    return (
+        <ThemeContext.Provider value={{ theme, setTheme }}>
+            {children}
+        </ThemeContext.Provider>
+    )
+}
